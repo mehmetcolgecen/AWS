@@ -15,7 +15,6 @@ Resources:
     Type: AWS::EC2::SecurityGroup
     Properties:
       GroupDescription: Enables SSH and HTTP ports #required
-      GroupName: Call ALB Demo
       SecurityGroupIngress: 
         - IpProtocol: tcp
           FromPort: 22
