@@ -6,6 +6,9 @@ Parameters:
   CallVPC:
     Description: VPC Id of your existing account
     Type: AWS::EC2::VPC::Id
+  CallSubnets:
+    Description: List of Subnet Ids in your VPC. Please select at least 2 of them.
+    Type: List<AWS::EC2::Subnet::Id>
 
 Resources:
   CallSecGroup:
@@ -34,4 +37,22 @@ Resources:
       Protocol: HTTP
       UnhealthyThresholdCount: 3
       VpcId: !Ref CallVPC
+
+  CallApplicationLoadBalancer:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      SecurityGroups:
+        - !GetAtt CallSecGroup.GroupId
+      Subnets: !Ref CallSubnets
+
+  CallALBListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      DefaultActions: #required
+        - Type: forward
+          TargetGroupArn: !Ref CallALBTargetGroup
+      LoadBalancerArn: !Ref CallApplicationLoadBalancer #required
+      Port: 80
+      Protocol: HTTP
+  
     
