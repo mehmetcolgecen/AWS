@@ -2,6 +2,11 @@ AWSTemplateFormatVersion: 2010-09-09
 Description: |
   This template will create Application Load Balancer with ASG using LT
 
+Parameters:
+  CallVPC:
+    Description: VPC Id of your existing account
+    Type: AWS::EC2::VPC::Id
+
 Resources:
   CallSecGroup:
     Type: AWS::EC2::SecurityGroup
@@ -17,3 +22,16 @@ Resources:
           FromPort: 80
           ToPort: 80
           CidrIp: 0.0.0.0/0
+      VpcId: !Ref CallVPC
+
+  CallALBTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      HealthCheckIntervalSeconds: 25
+      HealthCheckTimeoutSeconds: 5
+      HealthyThresholdCount: 3
+      Port: 80
+      Protocol: HTTP
+      UnhealthyThresholdCount: 3
+      VpcId: !Ref CallVPC
+    
