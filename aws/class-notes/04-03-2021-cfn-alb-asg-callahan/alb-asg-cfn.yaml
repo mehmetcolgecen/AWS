@@ -1,2 +1,56 @@
-# We will create cloudformation template from the scratch
+AWSTemplateFormatVersion: 2010-09-09
+Description: |
+  This template will create Application Load Balancer with AGG using LT (Launch Template)
+Parameters:
+  mehmetVPC:
+    Description: VPC Id of your existing account
+    Type: AWS::EC2::VPC::Id
 
+  mehmetSubnets:
+    Description: List of Sunbet IDs in your VPC. Please select al least 2.
+    Type: List<AWS::EC2::Subnet::Id>
+
+Resources:
+  MehSecGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Enables SSH and HTTP ports
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 80 
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+      VpcId: !Ref mehmetVPC
+
+  MehmetALBTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      HealthCheckIntervalSeconds: 25
+      HealthCheckTimeoutSeconds: 5
+      HealthyThresholdCount: 3
+      Port: 80
+      Protocol: HTTP
+      UnhealthyThresholdCount: 3
+      VpcId: !Ref mehmetVPC
+
+  
+  MehmetAppLoadBalancer:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      SecurityGroups:
+        - !GetAtt MehSecGroup.GroupId
+      Subnets: !Ref mehmetSubnets
+  
+  MehmetListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      DefaultActions: #required
+        - Type: forward
+          TargetGroupArn: !Ref MehmetALBTargetGroup
+      LoadBalancerArn: !Ref MehmetAppLoadBalancer #required
+      Port: 80
+      Protocol: HTTP
