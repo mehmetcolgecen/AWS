@@ -112,7 +112,7 @@ Resources:
             </html>" > /var/www/html/index.html
             systemctl start httpd
             systemctl enable httpd
-        SecurityGroups:
+        SecurityGroupIds:
           - !Ref CallSecGroup
         InstanceType: !Ref CallInstanceType
   
