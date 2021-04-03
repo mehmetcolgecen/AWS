@@ -113,7 +113,7 @@ Resources:
             systemctl start httpd
             systemctl enable httpd
         SecurityGroups:
-          - !Ref CallSecGroup
+          - !GetAtt CallSecGroup.GroupId
         InstanceType: !Ref CallInstanceType
   
   CallAutoScalingGroup:
