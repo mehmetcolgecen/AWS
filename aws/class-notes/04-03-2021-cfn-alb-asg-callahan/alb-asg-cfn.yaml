@@ -47,21 +47,12 @@ Resources:
           ToPort: 22
           CidrIp: 0.0.0.0/0
         - IpProtocol: tcp
-<<<<<<< HEAD
-          FromPort: 80 
-          ToPort: 80
-          CidrIp: 0.0.0.0/0
-      VpcId: !Ref mehmetVPC
-
-  MehmetALBTargetGroup:
-=======
           FromPort: 80
           ToPort: 80
           CidrIp: 0.0.0.0/0
       VpcId: !Ref CallVPC
 
   CallALBTargetGroup:
->>>>>>> c93b27f8a83b78de85e771c1887c57012bec19a7
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
     Properties:
       HealthCheckIntervalSeconds: 25
@@ -70,19 +61,6 @@ Resources:
       Port: 80
       Protocol: HTTP
       UnhealthyThresholdCount: 3
-<<<<<<< HEAD
-      VpcId: !Ref mehmetVPC
-
-  
-  MehmetAppLoadBalancer:
-    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
-    Properties:
-      SecurityGroups:
-        - !GetAtt MehSecGroup.GroupId
-      Subnets: !Ref mehmetSubnets
-  
-  MehmetListener:
-=======
       VpcId: !Ref CallVPC
 
   CallApplicationLoadBalancer:
@@ -93,17 +71,10 @@ Resources:
       Subnets: !Ref CallSubnets
 
   CallALBListener:
->>>>>>> c93b27f8a83b78de85e771c1887c57012bec19a7
     Type: AWS::ElasticLoadBalancingV2::Listener
     Properties:
       DefaultActions: #required
         - Type: forward
-<<<<<<< HEAD
-          TargetGroupArn: !Ref MehmetALBTargetGroup
-      LoadBalancerArn: !Ref MehmetAppLoadBalancer #required
-      Port: 80
-      Protocol: HTTP
-=======
           TargetGroupArn: !Ref CallALBTargetGroup
       LoadBalancerArn: !Ref CallApplicationLoadBalancer #required
       Port: 80
@@ -177,4 +148,3 @@ Outputs:
       - ''
       - - 'http://'
         - !GetAtt CallApplicationLoadBalancer.DNSName
->>>>>>> c93b27f8a83b78de85e771c1887c57012bec19a7
