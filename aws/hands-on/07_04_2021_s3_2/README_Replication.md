@@ -192,7 +192,7 @@ PS: Please, do not forget to select "US East (Ohio)" as Region
             ]
         },
         {
-            "Action": [ # Since we replicate objects from source bucket, our destination bucket needs this replication permission by itself.
+            "Action": [ 
                 "s3:ReplicateObject", 
                 "s3:ReplicateDelete",
                 "s3:ReplicateTags",
