@@ -134,7 +134,7 @@ cat.jpg
 - Open static website URL in browser and show it is working.
 
 ### Step 2 - Create Destination Bucket
-<!-- Ok, Now we'll create our destination bucket. Then, we won't upload any files. It has same features with source bucket but region. We'll create this bucket us-east-2 (ohio) region.-->
+
 - Create a new bucket named `destination.cross.region.replica.clarusway` with following properties.
 
 ```text
