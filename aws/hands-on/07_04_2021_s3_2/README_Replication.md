@@ -182,8 +182,8 @@ PS: Please, do not forget to select "US East (Ohio)" as Region
     "Statement": [
         {
             "Action": [
-                "s3:Get*", #allow every action starts with get
-                "s3:ListBucket" # allow taking the list of buckets
+                "s3:Get*", 
+                "s3:ListBucket"
             ],
             "Effect": "Allow",
             "Resource": [
