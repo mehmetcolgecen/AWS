@@ -95,29 +95,7 @@ When sending request, the client can send data with using different http methods
 
 ## Part 3 - Write a Sample Web Application with forms and database implementation on GitHub Repo
 
-- Create folder named `flask-03-handling-forms-and-sql-on-ec2-linux2` within `clarusway-python-workshop` repo
-
-- Write an application with form handling and save the complete code as `app-form-handling.py` under `hands-on/flask-03-handling-forms-and-sql-on-ec2-linux2` folder.
-
-- Import Flask modules
-
-- Create an object named app
-
-- Create a function named `home` which uses template file named `index.html` given under `templates` folder,
-- send your name as template variable, and assign route of no path ('/')
-
-- Write a function named `greet` which uses template file named `greet.html` given under `templates` folder
-- and assign to the static route of ('/greet')
-
-- Write a function named `login` which uses `GET` and `POST` methods,
-- and template files named `login.html` and `secure.html` given under `templates` folder
-- and assign to the static route of ('login')
-
-- Add a statement to run the Flask application which can be reached from any host on port 80.
-
-
 - Write an application with database implementation using `MySQL` and save the complete code as `app-with-mysql.py` under `hands-on/flask-03-handling-forms-and-sql-on-ec2-linux2` folder.
-
 
 - Write a function named `find_emails` which find emails using keyword from the user table in the db,
 - and returns result as tuples `(name, email)`.
@@ -142,9 +120,7 @@ When sending request, the client can send data with using different http methods
 
 - commit your code and push it to your GitHub repo
 
-
 - Launch an Instance and pull your files in to it
-
 
 - Run your application on EC2
 
