@@ -122,9 +122,4 @@ When sending request, the client can send data with using different http methods
 
 - Launch an Instance and pull your files in to it
 
-<<<<<<< HEAD
-- Run your application on EC2
-=======
 - Run your application on EC2 and RDS
->>>>>>> dd7f86c63baa9a9ceb1d0f72d411f81a472978ee
-
