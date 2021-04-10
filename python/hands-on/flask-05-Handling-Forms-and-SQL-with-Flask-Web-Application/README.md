@@ -97,7 +97,6 @@ When sending request, the client can send data with using different http methods
 
 - Write an application with database implementation using `MySQL` and save the complete code as `app-with-mysql.py` under `hands-on/flask-03-handling-forms-and-sql-on-ec2-linux2` folder.
 
-
 - Write a function named `find_emails` which find emails using keyword from the user table in the db,
 - and returns result as tuples `(name, email)`.
 
@@ -117,12 +116,11 @@ When sending request, the client can send data with using different http methods
 
 - Please write same application that was given in Part3 with MYSQL
 
-- Create an RDS database and use it as database of application
+- Create an Amazon RDS and use it as database of application
 
 - commit your code and push it to your GitHub repo
 
 - Launch an Instance and pull your files in to it
 
-
-- Run your application on EC2
+- Run your application on EC2 and RDS
 
