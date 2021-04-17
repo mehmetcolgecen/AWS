@@ -1,0 +1,108 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: |
+  This Cloudformation Template was written for running Roman Numerals Static Website on EC2. This website will be deployed on Linux 2 (ami-0742b4e673072066f) EC2 instance with custom security group which allows http connections on port 80 and ssh port 22 from anywhere. Roman Numerals website is dowloaded from Public Github repository, then deployed to web enviroment by using Python's Flask framework.  
+
+Resources:
+
+  RomanSecGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Sec Group for Roman Numerals #required
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0
+
+  RomanInstance:
+      Type: AWS::EC2::Instance
+    Properties:
+      ImageId: ami-0742b4e673072066f
+      InstanceType: t2.micro
+      KeyName: mehmet
+      SecurityGroupIds:
+        - !Ref RomanSecGroup
+      Tags:
+        - Key: Name
+          Value: !Sub Web Server of ${AWS::StackName}
+      UserData:
+        Fn::Base64:
+            #! /bin/bash
+            yum update -y
+            yum install httpd -y
+            FOLDER="https://raw.githubusercontent.com/serdarcw/kittens-carousel-static-website/master/static-web"
+            cd /var/www/html
+            wget $FOLDER/index.html
+            wget $FOLDER/cat0.jpg
+            wget $FOLDER/cat1.jpg
+            wget $FOLDER/cat2.jpg
+            wget $FOLDER/cat3.png
+            systemctl start httpd
+            systemctl enable httpd
+
+
+    Type: AWS::EC2::Instance
+    Properties:
+      AdditionalInfo: String
+      Affinity: String
+      AvailabilityZone: String
+      BlockDeviceMappings:
+        - BlockDeviceMapping
+      CpuOptions:
+        CpuOptions
+      CreditSpecification:
+        CreditSpecification
+      DisableApiTermination: Boolean
+      EbsOptimized: Boolean
+      ElasticGpuSpecifications:
+        - ElasticGpuSpecification
+      ElasticInferenceAccelerators:
+        - ElasticInferenceAccelerator
+      EnclaveOptions:
+        EnclaveOptions
+      HibernationOptions:
+        HibernationOptions
+      HostId: String
+      HostResourceGroupArn: String
+      IamInstanceProfile: String
+      ImageId: String
+      InstanceInitiatedShutdownBehavior: String
+      InstanceType: String
+      Ipv6AddressCount: Integer
+      Ipv6Addresses:
+        - InstanceIpv6Address
+      KernelId: String
+      KeyName: String
+      LaunchTemplate:
+        LaunchTemplateSpecification
+      LicenseSpecifications:
+        - LicenseSpecification
+      Monitoring: Boolean
+      NetworkInterfaces:
+        - NetworkInterface
+      PlacementGroupName: String
+      PrivateIpAddress: String
+      RamdiskId: String
+      SecurityGroupIds:
+        - String
+      SecurityGroups:
+        - String
+      SourceDestCheck: Boolean
+      SsmAssociations:
+        - SsmAssociation
+      SubnetId: String
+      Tags:
+        - Tag
+      Tenancy: String
+      UserData: String
+      Volumes:
+        - Volume
+
+
+Transform:
+  
+Outputs:
