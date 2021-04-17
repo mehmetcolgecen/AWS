@@ -1,6 +1,6 @@
 AWSTemplateFormatVersion: 2010-09-09
 Description: |
-  This Cloudformation Template was written for running Kittens Carousel Static Website on EC2. This website will be deployed on Linux 2 (ami-0742b4e673072066f) EC2 instance with custom security group which allows http connections on port 80 and ssh port 22 from anywhere. Kittens Carousel Static website is dowloaded from Public Github repository, then deployed on Apache Web Server.
+  This Cloudformation Template was written for running Roman Numerals Static Website on EC2. This website will be deployed on Linux 2 (ami-0742b4e673072066f) EC2 instance with custom security group which allows http connections on port 80 and ssh port 22 from anywhere. Roman Numerals website is dowloaded from Public Github repository, then deployed to web enviroment by using Python's Flask framework.
     
 Resources:
   WebServerSecurityGroup:
@@ -21,7 +21,7 @@ Resources:
     Properties:
       ImageId: ami-0742b4e673072066f
       InstanceType: t2.micro
-      KeyName: serdar
+      KeyName: mehmet
       SecurityGroupIds:
         - !Ref WebServerSecurityGroup
       Tags:
