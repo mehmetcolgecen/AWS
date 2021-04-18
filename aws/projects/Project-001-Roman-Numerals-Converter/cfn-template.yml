@@ -5,7 +5,6 @@ Parameters:
   KeyName:
     Description: Enter the name of your Key Pair for EC2 lol
     Type: AWS::EC2::KeyPair::KeyName
-    ConstraintDescription: Must one of the existing EC2 KeyPair
   InstanceType:
     Description: Please select the type of EC2 instance lol  
     Type: String
