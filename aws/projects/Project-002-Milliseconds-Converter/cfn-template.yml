@@ -71,11 +71,14 @@ Resources:
       HealthCheckType: ELB
       HealthCheckGracePeriod: 90
       MinSize: '1'
-      DesiredSize: '2'
+      DesiredCapacity: '2'
       MaxSize: '3'
       TargetGroupARNs:
         - !Ref myALBTargetGroup
-
+      Tags:
+        - Key: Name
+          PropagateAtLaunch: true
+          Value: !Sub Web Server of ${AWS::StackName}
   myLaunchConfig:
     Type: AWS::AutoScaling::LaunchConfiguration
     Properties:
@@ -87,15 +90,13 @@ Resources:
       SecurityGroups:
         - !Ref mySecurityGroup
       InstanceType: !Ref InstanceType
-      Tags:
-        - Key: Name
-          Value: !Sub Web Server of ${AWS::StackName}   
       UserData: !Base64 |
+        #!/bin/bash
         yum update -y
         yum install python3 -y
         pip3 install flask
         cd /home/ec2-user
-        FOLDER="https://raw.githubusercontent.com/mehmetcolgecen/AWS-DEVOPS/main/aws/projects/Project-001-Roman-Numerals-Converter"
+        FOLDER="https://raw.githubusercontent.com/mehmetcolgecen/AWS-DEVOPS/main/aws/projects/Project-002-Milliseconds-Converter"
         wget $FOLDER/app.py
         wget -P templates $FOLDER/templates/index.html
         wget -P templates $FOLDER/templates/result.html
