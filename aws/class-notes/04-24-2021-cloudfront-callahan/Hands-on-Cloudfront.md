@@ -1,4 +1,6 @@
-## Part 1 - Creating a Certificate 
+# Hands-on CF-01 : Configuring Cloudfront with Route53, ACM and S3 as Static Website
+
+## Part 1 - Creating a Certificate
 
 - Go to Certificate Manager service and select "Provision Certificates" ----> "Get Started"
 
@@ -15,25 +17,27 @@
       -  Review and click "Comfirm and Request"
 ```
 
--  To complete the  process click "Continue" button
+- To complete the  process click "Continue" button
 
--  On Certificates page Click on your newly created certificate.
+- On Certificates page Click on your newly created certificate.
 
--  Status >>> Domain >>> [your-domain-name]
+- Status >>> Domain >>> [your-domain-name]
 
--  Then at the bottom of the page click "Create record in Route 53" button.
+- Then at the bottom of the page click "Create record in Route 53" button.
 
--  Click "create" on the pop-up menu.
+- Click "create" on the pop-up menu.
 
--  It takes a while to be ready.  
+- It takes a while to be ready.  
 
-## Part 2 - Creating a Static WebSite Hosting 
+## Part 2 - Creating a Static WebSite Hosting
 
-1. Go to S3 service and create a bucket with domain name: "[your donamin name].net"
-  - Public Access Enabled
-  - Upload Files named "index.html" and "ryu.jpg" in "v1" folder
-  - Permissions>>> Bucket Policy >>> Paste bucket Policy
-```bash
+1. Go to S3 service and create a bucket with domain name: "[your-donamin-name].net"
+
+- Public Access Enabled
+- Upload Files named "index.html" and "ryu.jpg" in "v1" folder
+- Permissions>>> Bucket Policy >>> Paste bucket Policy
+
+```json
 {
     "Version": "2012-10-17",
     "Statement": [
@@ -47,9 +51,10 @@
     ]
 }
 ```
-  - Properties>>> Set Static Web Site >>> Enable >>> Index document : index.html 
- 
- ## Part 3 - Create CloudFront Distribution 
+
+- Properties>>> Set Static Web Site >>> Enable >>> Index document : index.html
+
+## Part 3 - Create CloudFront Distribution
 
 - First of all we need to copy endpoint of S3 static website bucket.
 
@@ -58,15 +63,15 @@
 - Go to CloudFront service and select "Create distribution"
 
 - Select a delivery method for your content: Choose "Web" option and click on "Get Started"
-- Create Distribution : 
-  - Origin Settings: 
-      - Origin Domain Name: Paste the "endpoint" (without https://) of the S3 bucket
+
+- Create Distribution :
+  - Origin Settings:
+    - Origin Domain Name: Paste the "endpoint" (without https://) of the S3 bucket
   - Default Cache Behavior Settings
-      - Viewer Protocol Policy: Select "Redirect HTTP to HTTPS"
-   
+    - Viewer Protocol Policy: Select "Redirect HTTP to HTTPS"
   - Distribution Settings
-      - Alternate Domain Names (CNAMEs): [your-domain-name]
-      - SSL Certificate: Select "Custom SSL Certificate (example.com)" >>> select your newly created certificate
+    - Alternate Domain Names (CNAMEs): [your-domain-name]
+    - SSL Certificate: Select "Custom SSL Certificate (example.com)" >>> select your newly created certificate
 
 - Leave the other settings as default.
 
@@ -110,30 +115,30 @@ tab seen bottom
 
 Step-1 - Invalidation
 
- - Go to your S3 bucket hosting the website and put the "ryu.jpg" file in the "v2" folder (not in v1) to your bucket. 
+- Go to your S3 bucket hosting the website and put the "ryu.jpg" file in the "v2" folder (not in v1) to your bucket. 
 
- - Go to the target domain name "[your DNS name].net" on browser and notice the image has't been changed.
- 
- - Go to the CloudFront Menu and select the newly created distribution.
- 
- - Select the subsection of "Invalidation" tab and click "Create Invalidation"
- 
- - On the opening page enter "/ryu.jpg" and click "Invalidate". 
- 
- - After the invalidation process is completed, check the website and notice the image is updates now.
- 
+- Go to the target domain name "[your DNS name].net" on browser and notice the image has't been changed.
+
+- Go to the CloudFront Menu and select the newly created distribution.
+
+- Select the subsection of "Invalidation" tab and click "Create Invalidation"
+
+- On the opening page enter "/ryu.jpg" and click "Invalidate". 
+
+- After the invalidation process is completed, check the website and notice the image is updates now.
+
 Step-2 - Geo Restriction
 
- - Go to the CloudFront Menu and select the newly created distribution.
+- Go to the CloudFront Menu and select the newly created distribution.
   
- - Select the subsection of "Restriction" tab >>> Geo Restriction >>> Edit
- 
- - Enable Geo-Restriction : Yes
- 
- - Restriction Type : Black List
- 
- - Countries : US-United States >>> Add
- 
- - Click "Yes Edit"
+- Select the subsection of "Restriction" tab >>> Geo Restriction >>> Edit
 
- - After the restriction process is completed, check the website and notice the webpage is blocked.
+- Enable Geo-Restriction : Yes
+
+- Restriction Type : Black List
+
+- Countries : US-United States >>> Add
+
+- Click "Yes Edit"
+
+- After the restriction process is completed, check the website and notice the webpage is blocked.
