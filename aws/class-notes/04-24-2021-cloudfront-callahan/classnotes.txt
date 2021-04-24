@@ -1,10 +1,7 @@
-AWS Databases Session
-NoSQL(DynamoDB) Service 
+AWS Cloudfront Session
 4/24/2021
 
 Instructor: Callahan
-
-Session - 1
 
 Session starts at 10am EST
 
