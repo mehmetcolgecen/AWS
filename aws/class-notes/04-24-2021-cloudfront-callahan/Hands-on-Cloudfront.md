@@ -4,7 +4,7 @@
 
 - Click on "Request a public certificate" and hit the "Request Certificate"
 
-```
+```text
 
       -  Add domain names          : "[your donamin name].net" (naked domain name) and click next
 
@@ -19,7 +19,7 @@
 
 -  On Certificates page Click on your newly created certificate.
 
--  Status >>> Domain >>> [your donamin name] 
+-  Status >>> Domain >>> [your-domain-name]
 
 -  Then at the bottom of the page click "Create record in Route 53" button.
 
@@ -42,12 +42,12 @@
             "Effect": "Allow",
             "Principal": "*",
             "Action": "s3:GetObject",
-            "Resource": "arn:aws:s3:::please paste your ARN name/*"
+            "Resource": "arn:aws:s3:::please-paste-your-ARN/*"
         }
     ]
 }
 ```
-  - Preporties>>> Set Static Web Site >>> Enable >>> Index document : index.html 
+  - Properties>>> Set Static Web Site >>> Enable >>> Index document : index.html 
  
  ## Part 3 - Create CloudFront Distribution 
 
@@ -65,9 +65,9 @@
       - Viewer Protocol Policy: Select "Redirect HTTP to HTTPS"
    
   - Distribution Settings
-      - Alternate Domain Names (CNAMEs): [your donamin name]
+      - Alternate Domain Names (CNAMEs): [your-domain-name]
       - SSL Certificate: Select "Custom SSL Certificate (example.com)" >>> select your newly created certificate
-     
+
 - Leave the other settings as default.
 
 - Click "Create Distribution".
@@ -75,7 +75,6 @@
 - It may take some time distribution to be deployed. (Check status of distribution to be "Deployed")
 
 - When it is deployed, copy the "Domain name" of the distribution. 
-
 
 ## Part 4 - Creating Route 53 record sets (Alias)
 
@@ -95,6 +94,7 @@ Value/Route traffic to:
     - choose your CloudFront distribution endpoint
 Record Type : A
 ```
+
 - hit the define simple record
 
 - Select newly created record's flag and hit the "create record" 
