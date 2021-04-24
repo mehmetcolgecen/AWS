@@ -11,5 +11,6 @@ Session starts at 10am EST
   
   References:
   - https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/Introduction.html
+  - https://aws.amazon.com/about-aws/global-infrastructure/
 
 
