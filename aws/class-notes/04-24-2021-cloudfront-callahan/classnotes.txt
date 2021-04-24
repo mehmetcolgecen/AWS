@@ -1,0 +1,18 @@
+AWS Databases Session
+NoSQL(DynamoDB) Service 
+4/24/2021
+
+Instructor: Callahan
+
+Session - 1
+
+Session starts at 10am EST
+
+
+
+
+  
+  References:
+  - https://docs.aws.amazon.com/AmazonCloudFront/latest/DeveloperGuide/Introduction.html
+
+
