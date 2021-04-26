@@ -97,14 +97,14 @@ Resources:
     Type: AWS::AutoScaling::AutoScalingGroup
     Properties:
       AvailabilityZones: !GetAZs ""
-      DesiredCapacity: 2
+      DesiredCapacity: "2"
       HealthCheckGracePeriod: 90
       HealthCheckType: ELB
       LaunchTemplate:
         LaunchTemplateId: !Ref WebServerLaunchTemplate
         Version: !GetAtt WebServerLaunchTemplate.LatestVersionNumber
-      MaxSize: 3 #required
-      MinSize: 1 #required
+      MaxSize: "3" #required
+      MinSize: "1" #required
       TargetGroupARNs:
         - !Ref WebServerTargetGroup
 
