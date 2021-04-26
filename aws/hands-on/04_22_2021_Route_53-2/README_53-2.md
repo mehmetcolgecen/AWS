@@ -178,7 +178,7 @@ Protocol            : HTTP
 
 IP address          : N.Virginia_1 IP address
 
-Hostname:           : -
+Hostname:           : awsdevops-club.com
 
 Port                : 80
 

@@ -1,45 +1,34 @@
-from flask import Flask, render_template,request
+from flask import Flask, render_template, request
 
 app = Flask(__name__)
 
-def converter(miliseconds):
-    if miliseconds < 1000:
-        return miliseconds
+def convert(millisecond):
+    hour_in_millisecond = 60*60*1000
+    hours = millisecond // hour_in_millisecond
+    millisecond_left = millisecond % hour_in_millisecond
+
+    minute_in_millisecond = 60*1000
+    minutes = millisecond_left // minute_in_millisecond
+    millisecond_left %= minute_in_millisecond
+
+    seconds = millisecond_left // 1000
+
+    return f'{hours} hour/s '*(hours!=0) + f'{minutes} minute/s '*(minutes!=0) + f'{seconds} second/s '*(seconds!=0) or f'just {millisecond} millisecond/s'
+
+
+@app.route('/', methods=['POST', 'GET'])
+def main_post():
+    if request.method == 'POST':
+        alpha = request.form['number']
+        if not alpha.isdecimal():
+            return render_template('index.html', developer_name = 'Serdar', not_valid = True)
+        if not (0 < int(alpha)):
+            return render_template('index.html', developer_name = 'Serdar', not_valid = True)
+        return render_template('result.html', developer_name=' Serdar', milliseconds = alpha, result = convert(int(alpha)))
     else:
-        seconds, miliseconds = divmod(miliseconds, 1000)
-        minutes, seconds = divmod(seconds, 60)
-        hours, minutes = divmod(minutes, 60)
-        return [hours, minutes, seconds]
-
-def calculated_time(miliseconds):
-    time = ["hour/s", "minute/s", "second/s"]
-    calculated = converter(miliseconds)
-    if type(calculated) == int:
-        result = f"just {calculated} millisecond/s"
-    else:
-        result = " ".join([f"{calculated[i]} {time[i]}" for i in range(3) if calculated[i] != 0])
-    return result
-
-@app.route("/", methods=["POST","GET"])
-def main(dev_name="Mehmet"):
-    if request.method == "POST":
-        post_value = request.form["number"].strip()
-        if not post_value.isdecimal():
-            return render_template("index.html", not_valid = True, developer_name = dev_name)
-        number = int(post_value)
-        if number <= 0:
-            return render_template("index.html", not_valid = True, developer_name = dev_name)
-        else:
-            return render_template("result.html", result = calculated_time(number),
-                                    developer_name = dev_name, miliseconds = number)
-    
-    else:
-        return render_template("index.html", not_valid = False, developer_name = dev_name)
+        return render_template('index.html', developer_name ='Serdar', not_valid = False)
 
 
-
-
-
-if __name__ == "__main__":
-    # app.run(debug=True)
+if __name__ == '__main__':
+    #app.run(debug=True)
     app.run(host='0.0.0.0', port=80)

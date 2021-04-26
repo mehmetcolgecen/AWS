@@ -1,58 +1,31 @@
 AWSTemplateFormatVersion: 2010-09-09
 Description: |
-      CloudFormation Template for Miliseconds Converter Application. This template creates Python Flask Web Application on:
-      - Auto Scaling Group(ASG, Launch Config, Scaling Policy)
-      - Elastic Load Balancer (ALB, Listener, Target Group)
-      Miliseconds Converter Application is downloaded from Github repository, then installed on Flask.
+    Cloudformation template for milliseconds converter application. This app runs on application load balancer and is controlled by autoscaling groups. 
 Parameters:
-  VpcId:
+  MyVPC:
+    Description: VPC Id of your existing account
     Type: AWS::EC2::VPC::Id
-    Description: Select VpcId of your existing Virtual Private Cloud (VPC)
-
+  
   Subnets:
     Type: List<AWS::EC2::Subnet::Id>
-    Description: Please select at least 2 of SubnetIds in your Virtual Private Cloud (VPC)
-
-  PolicyTargetValue:
-    Description: Please enter your Target value that triggers the Autoscaling
-    Default: '60'
-    Type: String
-
-  InstanceType:
-    Description: Please select the type of EC2 instance  
-    Type: String
-    Default: t2.micro
-    AllowedValues:
-      - t2.micro
-      - t1.micro
-      - m1.small
-      - m1.medium
-      - m1.large
-    ConstraintDescription: must be a valid EC2 instance type.
-
-  KeyName:
-    Description: Enter the name of your Key Pair for EC2 lol
-    Type: AWS::EC2::KeyPair::KeyName
-    ConstraintDescription: Must one of the existing EC2 KeyPair
-
-Mappings:
-  RegionImageMap:
-    us-east-1:
-      AMI: ami-0c94855ba95c71c99
-    us-east-2:
-      AMI: ami-0603cbe34fd08cb81
-    us-west-1:
-      AMI: ami-0e65ed16c9bf1abc7
-    us-west-2:
-      AMI: ami-0841edc20334f9287
-    eu-west-1:
-      AMI: ami-08a2aed6e0a6f9c7d
+  
 
 Resources:
-  mySecurityGroup:
-    Type: "AWS::EC2::SecurityGroup"
+  ALBSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
     Properties:
-      GroupDescription: Enables SSH and HTTP
+      GroupDescription: Enable HTTP (80) for ALB
+      VpcId: !Ref MyVPC
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+  WebServerSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Enable HTTP for App from ALB
+      VpcId: !Ref MyVPC
       SecurityGroupIngress:
         - IpProtocol: tcp
           FromPort: 22
@@ -61,90 +34,84 @@ Resources:
         - IpProtocol: tcp
           FromPort: 80
           ToPort: 80
-          CidrIp: 0.0.0.0/0
-#Auto Scaling(ASG, Launch Config, Scaling Policy)
-  myAutoScalingGroup:
+          SourceSecurityGroupId: !GetAtt ALBSecurityGroup.GroupId
+  
+  WebServerLaunchTemplate:
+    Type: AWS::EC2::LaunchTemplate
+    Properties: 
+      LaunchTemplateData: 
+        ImageId: ami-0742b4e673072066f
+        InstanceType: t2.micro
+        KeyName: serdar
+        SecurityGroupIds: 
+          - !GetAtt WebServerSecurityGroup.GroupId
+        TagSpecifications: 
+          - ResourceType: instance
+            Tags: 
+              - Key: Name
+                Value: !Sub Web Server of ${AWS::StackName} 
+        UserData: 
+          Fn::Base64: |
+            #! /bin/bash
+            
+            yum update -y
+            yum install python3 -y
+            pip3 install flask
+            TOKEN="XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+            FOLDER="https://$TOKEN@raw.githubusercontent.com/serdarcw/Project-002-Milliseconds-Converter/master"
+            curl -s --create-dirs -o "/home/ec2-user/templates/index.html" -L $FOLDER/templates/index.html
+            curl -s --create-dirs -o "/home/ec2-user/templates/result.html" -L $FOLDER/templates/result.html
+            curl -s --create-dirs -o "/home/ec2-user/app.py" -L $FOLDER/app.py
+            python3 /home/ec2-user/app.py
+
+
+  WebServerTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      Port: 80
+      Protocol: HTTP
+      TargetType: instance
+      VpcId: !Ref MyVPC  # You can use ---> !GetAtt WebServerSecurityGroup.VpcId 
+  
+  ApplicationLoadBalancer:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      IpAddressType: ipv4
+      Scheme: internet-facing
+      SecurityGroups:
+        - !GetAtt ALBSecurityGroup.GroupId
+      Subnets: !Ref Subnets
+      Type: application
+  
+  ALBListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      DefaultActions: #required
+        - TargetGroupArn: !Ref WebServerTargetGroup
+          Type: forward
+      LoadBalancerArn: !Ref ApplicationLoadBalancer #required
+      Port: 80
+      Protocol: HTTP
+
+  WebServerASG:
     Type: AWS::AutoScaling::AutoScalingGroup
     Properties:
-      AvailabilityZones: !GetAZs 
-      LaunchConfigurationName: !Ref myLaunchConfig
-      HealthCheckType: ELB
+      AvailabilityZones: !GetAZs ""
+      DesiredCapacity: 2
       HealthCheckGracePeriod: 90
-      MinSize: '1'
-      DesiredCapacity: '2'
-      MaxSize: '3'
+      HealthCheckType: ELB
+      LaunchTemplate:
+        LaunchTemplateId: !Ref WebServerLaunchTemplate
+        Version: !GetAtt WebServerLaunchTemplate.LatestVersionNumber
+      MaxSize: 3 #required
+      MinSize: 1 #required
       TargetGroupARNs:
-        - !Ref myALBTargetGroup
-      Tags:
-        - Key: Name
-          PropagateAtLaunch: true
-          Value: !Sub Web Server of ${AWS::StackName}
-  myLaunchConfig:
-    Type: AWS::AutoScaling::LaunchConfiguration
-    Properties:
-      KeyName: !Ref KeyName
-      ImageId: !FindInMap 
-        - RegionImageMap
-        - !Ref AWS::Region
-        - AMI
-      SecurityGroups:
-        - !Ref mySecurityGroup
-      InstanceType: !Ref InstanceType
-      UserData: !Base64 |
-        #!/bin/bash
-        yum update -y
-        yum install python3 -y
-        pip3 install flask
-        cd /home/ec2-user
-        FOLDER="https://raw.githubusercontent.com/mehmetcolgecen/AWS-DEVOPS/main/aws/projects/Project-002-Milliseconds-Converter"
-        wget $FOLDER/app.py
-        wget -P templates $FOLDER/templates/index.html
-        wget -P templates $FOLDER/templates/result.html
-        python3 app.py
-   
-  myCPUPolicy:
-    Type: "AWS::AutoScaling::ScalingPolicy"
-    Properties:
-      AutoScalingGroupName: !Ref myAutoScalingGroup
-      PolicyType: TargetTrackingScaling
-      TargetTrackingConfiguration:
-        PredefinedMetricSpecification:
-          PredefinedMetricType: ASGAverageCPUUtilization
-        TargetValue: !Ref PolicyTargetValue
+        - !Ref WebServerTargetGroup
 
-#Elastic Load Balancer (ALB, Listener, Target Group)        
-  myApplicationLoadBalancer:
-    Type: "AWS::ElasticLoadBalancingV2::LoadBalancer"
-    Properties:
-      SecurityGroups:
-        - !GetAtt mySecurityGroup.GroupId
-      Subnets: !Ref Subnets  
-
-  myALBListener:
-    Type: "AWS::ElasticLoadBalancingV2::Listener"
-    Properties:
-      DefaultActions: 
-        - Type: forward
-          TargetGroupArn: !Ref myALBTargetGroup
-      LoadBalancerArn: !Ref myApplicationLoadBalancer
-      Port: 80
-      Protocol: HTTP
-
-  myALBTargetGroup:
-    Type: "AWS::ElasticLoadBalancingV2::TargetGroup"
-    Properties:
-      HealthCheckIntervalSeconds: 25
-      HealthCheckTimeoutSeconds: 5
-      HealthyThresholdCount: 3
-      Port: 80
-      Protocol: HTTP
-      UnhealthyThresholdCount: 3
-      VpcId: !Ref VpcId
 
 Outputs:
   WebsiteURL:
-    Description: The URL of the website
-    Value: !Join 
-      - ''
-      - - 'http://'
-        - !GetAtt myApplicationLoadBalancer.DNSName
+    Description: Milliseconds Converter Application Load Balancer URL
+    Value: !Sub 
+      - http://${ALBaddress}
+      - ALBaddress: !GetAtt ApplicationLoadBalancer.DNSName
