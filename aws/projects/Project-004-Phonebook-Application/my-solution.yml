@@ -1,0 +1,296 @@
+AWSTemplateFormatVersion: 2010-09-09
+Description: |
+    Cloudformation template for Phonebook application. 
+    This app runs on Application Load Balancer and is controlled by Auto Scaling Group.
+    This app uses mySQL for DB instance and EC2 user for web hosting.
+    Recources are going to be launched by this CloudFormation are as follows:
+      - RDS instance
+      - EC2 instance (Host)
+      - ASG
+        - Launch Template
+        - Scaling Policy
+      - ELB
+        - ALB
+        - Listener
+        - Target Group
+      - Security Groups (x3)
+    
+Parameters:
+  myVPC:
+    Type: AWS::EC2::VPC::Id
+    Description: Select VpcId of your existing Virtual Private Cloud (VPC)
+
+  Subnets:
+    Type: List<AWS::EC2::Subnet::Id>
+    Description: Please select at least 2 of SubnetIds in your Virtual Private Cloud (VPC)
+
+  PolicyTargetValue:
+    Description: Please enter your Target value that triggers the Autoscaling
+    Default: '75'
+    Type: String
+
+  InstanceType:
+    Description: Please select the type of EC2 instance  
+    Type: String
+    Default: t2.micro
+    AllowedValues:
+      - t2.micro
+      - t1.micro
+      - m1.small
+      - m1.medium
+      - m1.large
+    ConstraintDescription: must be a valid EC2 instance type.
+
+  KeyName:
+    Description: Enter the name of your Key Pair for EC2 lol
+    Type: AWS::EC2::KeyPair::KeyName
+    ConstraintDescription: Must one of the existing EC2 KeyPair
+
+  DBName:
+    Default: clarusway_phonebook
+    Description: database name to create a initial databese
+    Type: String
+    MinLength: '1'
+    MaxLength: '64'
+  #   AllowedPattern: '[a-zA-Z][a-zA-Z0-9]*'
+  #   ConstraintDescription: Must begin with a letter and contain only alphanumeric characters.
+
+  DBInstanceClass:
+    Default: db.t2.micro
+    Description: Please select the type of DB instance class
+    Type: String
+    ConstraintDescription: Must select a valid DB instance type.
+
+  DBAllocatedStorage:
+    Default: '20'
+    Description: The size of the database (GiB)
+    Type: Number
+    MinValue: '5'
+    MaxValue: '1024'
+    ConstraintDescription: must be between 20 and 65536 GiB.
+
+  DBUsername:
+    NoEcho: 'true'
+    Description: Username for MySQL database access
+    Type: String
+    MinLength: '1'
+    MaxLength: '16'
+    AllowedPattern: '[a-zA-Z][a-zA-Z0-9]*'
+    ConstraintDescription: must begin with a letter and contain only alphanumeric characters.
+
+  DBPassword:
+    NoEcho: 'true'
+    Description: Password MySQL database access
+    Type: String
+    MinLength: '8'
+    MaxLength: '41'
+    AllowedPattern: '[a-zA-Z0-9]*'
+    ConstraintDescription: must contain only alphanumeric characters.
+
+Mappings:
+  RegionImageMap:
+    us-east-1:
+      AMI: ami-0c94855ba95c71c99
+    us-east-2:
+      AMI: ami-0603cbe34fd08cb81
+    us-west-1:
+      AMI: ami-0e65ed16c9bf1abc7
+    us-west-2:
+      AMI: ami-0841edc20334f9287
+    eu-west-1:
+      AMI: ami-08a2aed6e0a6f9c7d
+
+Resources:
+# Security Groups (x3)
+  ALBSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Enable HTTP (80) for ALB
+      VpcId: !Ref myVPC
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          CidrIp: 0.0.0.0/0
+
+  # RDSSecurityGroup:
+  #   Type: AWS::EC2::SecurityGroup
+  #   Properties:
+  #     GroupDescription: Enable collection between ec2 host and RDS 
+  #     VpcId: !Ref myVPC
+  #     SecurityGroupIngress:
+  #       - IpProtocol: tcp
+  #         FromPort: 3306
+  #         ToPort: 3306
+  #         CidrIp: 0.0.0.0/0
+
+  RDSSecurityGroup:
+    Type: AWS::RDS::DBSecurityGroup
+    Properties:
+      DBSecurityGroupIngress: 
+        - EC2SecurityGroupId: !GetAtt WebServerSecurityGroup.GroupId
+      EC2VpcId: !Ref myVPC
+      GroupDescription: Enable collection between ec2 host and RDS
+
+  # DBSecGrIngress:
+  #   Type: AWS::RDS::DBSecurityGroupIngress
+  #   Properties:
+  #     DBSecurityGroupName: mehmet #required
+  #     EC2SecurityGroupId: !GetAtt WebServerSecurityGroup.GroupId 
+
+
+  WebServerSecurityGroup:
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupDescription: Enable HTTP for App from ALB and mysql connection for RDS
+      VpcId: !Ref myVPC
+      SecurityGroupIngress:
+        - IpProtocol: tcp
+          FromPort: 22
+          ToPort: 22
+          CidrIp: 0.0.0.0/0
+        - IpProtocol: tcp
+          FromPort: 80
+          ToPort: 80
+          SourceSecurityGroupId: !GetAtt ALBSecurityGroup.GroupId
+        - IpProtocol: tcp
+          FromPort: 3306
+          ToPort: 3306
+          CidrIp: 0.0.0.0/0 
+
+
+  myDataBase:
+    Type: AWS::RDS::DBInstance
+    Properties:
+      AllocatedStorage: !Ref DBAllocatedStorage
+      AllowMajorVersionUpgrade: false
+      AutoMinorVersionUpgrade: true
+      DBInstanceClass: !Ref DBInstanceClass #required
+      DBName: !Ref DBName
+      Engine: mysql
+      EngineVersion: 8.0.19
+      MasterUserPassword: !Ref DBPassword
+      MasterUsername: !Ref DBUsername
+      PubliclyAccessible: false
+      StorageType: gp2
+      DBSecurityGroups:
+       - !Ref RDSSecurityGroup
+
+#Auto Scaling(ASG, Launch Template, Scaling Policy)
+  WebServerLaunchTemplate:
+    Type: AWS::EC2::LaunchTemplate
+    Properties: 
+      LaunchTemplateData: 
+        ImageId: !FindInMap 
+        - RegionImageMap
+        - !Ref AWS::Region
+        - AMI
+        InstanceType: !Ref InstanceType
+        KeyName: !Ref KeyName
+        SecurityGroupIds: 
+          - !Ref WebServerSecurityGroup
+        TagSpecifications: 
+          - ResourceType: instance
+            Tags: 
+              - Key: Name
+                Value: !Sub Web Server of ${AWS::StackName} 
+        UserData: 
+          Fn::Base64: !Sub |
+            #! /bin/bash
+            yum update -y
+            yum install python3 -y
+            yum install mysql
+            pip3 install flask
+            pip3 install flask-mysql
+            cd /home/ec2-user
+            echo ${myDataBase.Endpoint.Address} > dbserver.endpoint
+            FOLDER="https://raw.githubusercontent.com/mehmetcolgecen/AWS-DEVOPS/main/aws/projects/Project-004-Phonebook-Application/"
+            wget $FOLDER/phonebook-app.py
+            wget -P templates $FOLDER/templates/index.html
+            wget -P templates $FOLDER/templates/delete.html
+            wget -P templates $FOLDER/templates/add-update.html
+            python3 phonebook-app.py
+
+  myCPUPolicy:
+    Type: "AWS::AutoScaling::ScalingPolicy"
+    Properties:
+      AutoScalingGroupName: !Ref myAutoScalingGroup
+      PolicyType: TargetTrackingScaling
+      TargetTrackingConfiguration:
+        PredefinedMetricSpecification:
+          PredefinedMetricType: ASGAverageCPUUtilization
+        TargetValue: !Ref PolicyTargetValue
+
+  myAutoScalingGroup:
+    Type: AWS::AutoScaling::AutoScalingGroup
+    Properties:
+      AvailabilityZones: !GetAZs ""
+      LaunchTemplate:
+        LaunchTemplateId: !Ref WebServerLaunchTemplate
+        Version: !GetAtt WebServerLaunchTemplate.LatestVersionNumber
+      HealthCheckType: ELB
+      HealthCheckGracePeriod: 90
+      MinSize: '1'
+      DesiredCapacity: '2'
+      MaxSize: '3'
+      TargetGroupARNs:
+        - !Ref WebServerTargetGroup
+
+#Elastic Load Balancer (ALB, Listener, Target Group)   
+  WebServerTargetGroup:
+    Type: "AWS::ElasticLoadBalancingV2::TargetGroup"
+    Properties:
+      HealthCheckIntervalSeconds: 25
+      HealthCheckTimeoutSeconds: 5
+      HealthyThresholdCount: 3
+      Port: 80
+      Protocol: HTTP
+      UnhealthyThresholdCount: 3
+      TargetType: instance
+      VpcId: !Ref myVPC
+
+  ALBListener:
+    Type: AWS::ElasticLoadBalancingV2::Listener
+    Properties:
+      DefaultActions: #required
+        - TargetGroupArn: !Ref WebServerTargetGroup
+          Type: forward
+      LoadBalancerArn: !Ref ApplicationLoadBalancer #required
+      Port: 80
+      Protocol: HTTP
+
+  ApplicationLoadBalancer:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      IpAddressType: ipv4
+      Scheme: internet-facing
+      SecurityGroups:
+        - !GetAtt ALBSecurityGroup.GroupId
+      Subnets: !Ref Subnets
+      Type: application
+
+  myDNS:
+    Type: AWS::Route53::RecordSetGroup
+    Properties:
+      HostedZoneName: awsdevops-club.com.
+      Comment: Alias record for ALB.
+      RecordSets:
+      - Name: www.awsdevops-club.com.
+        Type: A
+        AliasTarget:
+          HostedZoneId: !GetAtt 'ApplicationLoadBalancer.CanonicalHostedZoneID'
+          DNSName: !GetAtt 'ApplicationLoadBalancer.DNSName'
+
+
+
+Outputs:
+  WebsiteURL:
+    Description: Phonebook Application Load Balancer URL
+    Value: !Ref myDNS
+
+# Outputs:
+#   WebsiteURL:
+#     Description: Phonebook Application Load Balancer URL
+#     Value: !Sub 
+#       - http://${ALBaddress}
+#       - ALBaddress: !GetAtt ApplicationLoadBalancer.DNSName

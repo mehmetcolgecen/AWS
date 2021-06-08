@@ -10,5 +10,7 @@ List of projects within AWS workshop as follows;
 
 4. - [Project-004 : Phonebook Application (Python Flask) deployed on AWS Application Load Balancer with Auto Scaling and Relational Database Service using AWS Cloudformation](./Project-004-Phonebook-Application/README.md)
 
-4. - [Project-005 : Capstone Project-Fully Menaged Blog-Application](./Project-005-Capstone Project-Fully Menaged Blog-Application/README.md)
+5. - [Project-005 : Capstone Project-Fully Menaged Blog-Application](./Project-005-Capstone Project-Fully Menaged Blog-Application/README.md)
+
+6. - [Project-006 : AWS Lambda-Cognito Project (Compare-Yourself)]
 
